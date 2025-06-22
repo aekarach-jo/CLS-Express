@@ -1,0 +1,78 @@
+#printing {
+    display: none;
+}
+
+.react-table .table-print thead th {
+    white-space: nowrap;
+    /* Prevent text wrapping */
+    overflow: hidden;
+    /* Hide overflowing text */
+    text-overflow: ellipsis;
+    /* Show ellipsis (...) for text overflow */
+}
+
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@page {
+    size: A4 landscape;
+    margin: 1rem 1rem 2rem 1rem;
+}
+
+@media print {
+    .page-print {
+        margin-top: 2rem;
+    }
+
+    .page-print .thead-print div:nth-child(1) {
+        width: 6rem;
+    }
+
+    .page-print .group-item .item-print div:nth-child(1) {
+        width: 6rem;
+    }
+
+    .page-print .group-item .item-print div:nth-child(4) {
+        margin-left: 3rem;
+    }
+
+    #printing {
+        display: block;
+    }
+
+    #printing #deleteBorder {
+        border: none;
+    }
+
+    #printing .card-body {
+        padding: 0 !important;
+    }
+
+    #printing #boxItem-print div div:nth-child(2) div {
+        box-shadow: none !important;
+        background: transparent !important;
+        border-radius: 0px !important;
+        border: none !important;
+    }
+}
+
+.multiFilter {
+    width: auto;
+    min-width: 20%;
+}
+
+.table-daily-report tr td {
+    height: 30px !important;
+    vertical-align: middle !important;
+}
+
+.table-daily-report tr td hr {
+    margin: 0px !important;
+}
+
+.custom-text-background {
+    background: #f8f8b4 !important;
+}
