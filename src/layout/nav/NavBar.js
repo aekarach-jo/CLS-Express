@@ -29,7 +29,7 @@ const NavBar = ({ children }) => {
       >
         {useIsMobile() && <NavMobileButtons />}
         <div className=" d-flex flex-row justify-content-between align-items-center ">
-          <img src="/img/logo/cls-logo.png" alt="logo" style={{ width: '77px', height: '60px', objectFit: 'cover' }} />
+          <img src="/img/logo/cls-logo.png" alt="logo" style={{ width: '77px', height: '60px', objectFit: 'cover', borderRadius: '5px' }} />
           {/* <h1 style={{ color: 'red', fontWeight: '700', marginLeft: '1rem', lineHeight: '2rem'}}>(UAT)</h1> */}
         </div>
         <Dropdown className="d-inline-block">
