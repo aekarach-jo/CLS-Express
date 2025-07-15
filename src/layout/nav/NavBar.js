@@ -34,7 +34,7 @@ const NavBar = ({ children }) => {
         </div>
         <Dropdown className="d-inline-block">
           <Dropdown.Toggle className="mb-1 cursor-pointer" as="p" href="#">
-            <img src="/img/profile/profile-1.webp" alt="profile" className="rounded-circle mx-2" style={{ width: '39px', height: '39px' }} />
+            <img src="/img/profile/profile-5.webp" alt="profile" className="rounded-circle mx-2" style={{ width: '39px', height: '39px' }} />
             {`${getName?.user?.first_name || ''} ${getName?.user?.last_name || ''}`}
           </Dropdown.Toggle>
           <Dropdown.Menu>

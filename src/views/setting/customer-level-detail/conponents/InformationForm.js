@@ -13,7 +13,7 @@ import { useIntl } from 'react-intl';
 import { useHistory } from 'react-router-dom';
 import { request } from 'utils/axios-utils';
 import { useMutation, useQuery } from 'react-query';
-import { Card, Col, Form, Row, Button } from 'react-bootstrap';
+import { Card, Col, Form, Row, Button, InputGroup, FormControl } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -24,11 +24,34 @@ const initialData = {
   name: '',
   rate: '',
   active: false,
+  rate_weights: [],
 };
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Please provide name Required'),
   rate: Yup.string().required('Please provide rate Required'),
+  rate_weights: Yup.array().of(
+    Yup.object().shape({
+      weight: Yup.number()
+        .min(0, 'Weight must be greater than or equal to 0')
+        .required('Weight is required')
+        .test('unique-weight', 'Weight value must be unique', function (value) {
+          const { parent, from } = this;
+          const allWeights = from[1].value.rate_weights || [];
+
+          // ค้นหา weight ที่เหมือนกัน (ไม่รวมตัวเอง)
+          const duplicates = allWeights.filter((item, index) => {
+            return item.weight === value && index !== allWeights.indexOf(parent);
+          });
+
+          // อนุญาต weight = 0 หรือไม่มีการซ้ำ
+          return value === 0 || duplicates.length === 0;
+        }),
+      rate: Yup.number()
+        .min(0, 'Rate must be greater than or equal to 0')
+        .required('Rate is required'),
+    })
+  ),
 });
 
 const callAddMasterLevel = async (data = {}) => {
@@ -66,6 +89,7 @@ const InformationForm = ({ id, isLoading, setIsLoading, mode }) => {
   const { formatMessage: f } = useIntl();
   const isEditMode = mode === 'new' || (mode === 'edit' && id);
   const { push } = useHistory();
+  const [rateWeightsChanges, setRateWeightsChanges] = useState({});
 
   const { data: initResult, isFetching, refetch } = useLevelData(id);
 
@@ -77,15 +101,10 @@ const InformationForm = ({ id, isLoading, setIsLoading, mode }) => {
   }
 
   const formik = useFormik({ initialValues: init, validationSchema, enableReinitialize: true });
-  const { handleSubmit, handleChange, values, touched, errors } = formik;
+  const { handleSubmit, handleChange, values, touched, errors, setFieldTouched, validateForm } = formik;
 
   const { mutate: saveLevel, isLoading: isAdding } = useMutation((currentData) => callAddMasterLevel(currentData), {
     onSuccess(data) {
-      console.log(data);
-      // if (error) {
-        
-      //   console.error('save order error :', message);
-      // }
       push('./');
       toast('success');
     },
@@ -138,15 +157,23 @@ const InformationForm = ({ id, isLoading, setIsLoading, mode }) => {
   };
 
   const handleSave = () => {
+    // เตรียมข้อมูล rate_weights พร้อม status
+    const processedRateWeights = values?.rate_weights?.map((item, index) => {
+      const hasChanges = rateWeightsChanges[index];
+      return hasChanges ? { ...item, edit: true } : item;
+    }) || [];
+
     var data = {
       id: values?.id,
       name: values?.name || '',
       description: values.description || '-',
       rate: values?.rate || '',
       active: values?.active || false,
+      rate_weights: processedRateWeights,
     };
 
-    if (Object.keys(errors).length === 0 && values?.name !== '') {
+    if (Object.keys(errors).length === 0) {
+      handleSubmit();
       if (!id) {
         saveLevel(data);
       } else {
@@ -157,6 +184,47 @@ const InformationForm = ({ id, isLoading, setIsLoading, mode }) => {
 
   const handleCheck = (type, value) => {
     handleChange({ target: { id: [type], value } });
+  };
+
+  const handleRateWeightChange = (index, field, value) => {
+    const inputValue = value.target.value;
+    console.log('Input value:', inputValue);
+
+    // อนุญาตให้ค่าว่างหรือตัวเลขเท่านั้น (รวม 0)
+    if (inputValue === '' || /^\d*\.?\d*$/.test(inputValue)) {
+      const numValue = inputValue === '' ? 0 : Number(inputValue);
+      console.log('Converted number:', numValue);
+
+      const updatedRateWeights = [...(values?.rate_weights || [])];
+      updatedRateWeights[index] = {
+        ...updatedRateWeights[index],
+        [field]: numValue
+      };
+
+      setRateWeightsChanges(prev => ({
+        ...prev,
+        [index]: true
+      }));
+
+      // อัปเดตค่าและ touched state สำหรับ validation
+      handleChange({ target: { id: 'rate_weights', value: updatedRateWeights } });
+
+      // ทำเครื่องหมาย touched สำหรับ field นี้
+      setFieldTouched(`rate_weights.${index}.${field}`, true);
+
+      // ถ้าเป็น weight field ให้ validate ทั้ง array
+      if (field === 'weight') {
+        // ทำเครื่องหมาย touched สำหรับ weight fields ทั้งหมด
+        values?.rate_weights?.forEach((item, i) => {
+          setFieldTouched(`rate_weights.${i}.weight`, true);
+        });
+
+        // Trigger validation สำหรับ rate_weights ทั้งหมด
+        setTimeout(() => {
+          validateForm();
+        }, 50);
+      }
+    }
   };
 
   return (
@@ -217,19 +285,48 @@ const InformationForm = ({ id, isLoading, setIsLoading, mode }) => {
               </Col>
             </Row>
             <Row className="mb-2">
-              <Col sm="12" md="12" lg="6">
-                <Form.Label className="col-form-label required">{f({ id: 'customerLevel.field.rateKip' })}</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="rate"
-                  onChange={handleChange}
-                  placeholder="0.00000"
-                  value={values?.rate}
-                  isInvalid={errors.rate && touched.rate}
-                  readOnly={!isEditMode}
-                />
-                {errors.rate && touched.rate && <div className="d-block invalid-feedback">{f({ id: errors.rate })}</div>}
-              </Col>
+              <Form.Label className="col-form-label required">{f({ id: 'customerLevel.field.rateKip' })}</Form.Label>
+              {values?.rate_weights?.map((item, index) => (
+                <Col sm="12" md="4" lg="2" key={index}>
+                  <Form.Label className="col-form-label required text-center w-100 pe-3">Weight | Rate</Form.Label>
+                  <InputGroup style={{ height: '3rem', marginBottom: '10px' }}>
+                    <FormControl
+                      value={item.weight}
+                      className="font-weight-bold"
+                      onChange={(e) => handleRateWeightChange(index, 'weight', e)}
+                      readOnly={!isEditMode}
+                      type="number"
+                      isInvalid={
+                        errors.rate_weights?.[index]?.weight &&
+                        touched.rate_weights?.[index]?.weight
+                      }
+                    />
+                    <FormControl
+                      value={item.rate}
+                      className="font-weight-bold"
+                      onChange={(e) => handleRateWeightChange(index, 'rate', e)}
+                      readOnly={!isEditMode}
+                      type="number"
+                      isInvalid={
+                        errors.rate_weights?.[index]?.rate &&
+                        touched.rate_weights?.[index]?.rate
+                      }
+                    />
+                  </InputGroup>
+                  {/* Weight validation error */}
+                  {errors.rate_weights?.[index]?.weight && touched.rate_weights?.[index]?.weight && (
+                    <div className="text-danger mb-1" style={{ fontSize: '0.875rem', display: 'block' }}>
+                      {errors.rate_weights[index].weight}
+                    </div>
+                  )}
+                  {/* Rate validation error */}
+                  {errors.rate_weights?.[index]?.rate && touched.rate_weights?.[index]?.rate && (
+                    <div className="text-danger mb-1" style={{ fontSize: '0.875rem', display: 'block' }}>
+                      {errors.rate_weights[index].rate}
+                    </div>
+                  )}
+                </Col>
+              ))}
             </Row>
             <Row className="mb-2">
               <Col sm="12" md="12" lg="6">
@@ -258,7 +355,7 @@ const InformationForm = ({ id, isLoading, setIsLoading, mode }) => {
                     <Button className="btn-icon" variant="foreground-alternate" onClick={handleCancelClick} disabled={isAdding || isSaving}>
                       {f({ id: 'common.back' })}
                     </Button>
-                    <Button className="btn-icon" variant="primary" hidden={mode === 'view'} type="submit" onClick={handleSave} disabled={isAdding || isSaving}>
+                    <Button className="btn-icon" variant="primary" hidden={mode === 'view'} type="submit" onClick={handleSave} disabled={isAdding || isSaving || Object.keys(errors).length > 0}>
                       {f({ id: 'common.save' })}
                     </Button>
                   </Col>

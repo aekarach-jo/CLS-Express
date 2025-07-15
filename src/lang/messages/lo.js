@@ -95,10 +95,6 @@ const common = {
   'common.search.product': ' by product name.',
   'common.search.sticker': ' by product name.',
   'common.search.export': ' by time schedule',
-  'common.kspRm': 'KSP RM',
-  'common.kspProduct': 'KSP Product',
-  'common.kspSupplier': 'Supplier',
-  'common.productForSale': 'Product for sale',
 };
 
 const dashboards = {

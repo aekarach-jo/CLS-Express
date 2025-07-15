@@ -33,8 +33,6 @@ const Layout = ({ children }) => {
       method: 'GET',
       params: { ...filter },
     });
-    console.log(res.data.data);
-
     return res.data.data.length === 0;
   };
 
