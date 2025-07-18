@@ -85,6 +85,71 @@ const Bill = () => {
     }
   };
 
+  const handleSendMessage = (phone, billData) => {
+    if (!phone) {
+      toast.error('No phone number available for this customer');
+      return;
+    }
+
+    // phone = '2091050433'
+
+    // Format phone number: always take last 8 digits and prepend 85620
+    let cleanPhone = phone.toString().replace(/[^0-9]/g, ''); // Remove all non-digits
+
+    // Take the last 8 digits
+    if (cleanPhone?.length >= 8) {
+      cleanPhone = cleanPhone.slice(-8);
+    }
+
+    // Prepend 85620
+    const formattedPhone = `+85620${cleanPhone}`;
+
+    let parcelList = '';
+    if (billData.parcels && billData.parcels?.length > 0) {
+      parcelList = billData.parcels.map((parcel, index) => `${index + 1}. ${parcel.track_no} (${parcel.weight}kg)`).join('\n');
+    }
+
+    const message =
+      `📮 ສະບາຍດີ ຈາກບໍລິສັດ CLS Express ຂົນສົ່ງ ຈີນ-ລາວ. ພັດສະດຸຮອດປາຍທາງແລ້ວ
+  📍 ຮັບເຄື່ອງໄດ້ທີ່: https://maps.app.goo.gl/zJQE1w3VS1ZWhkSS7?g_st=com.google.maps.preview.copy
+  ❗ຮັບພາຍໃນ 3 ວັນຫາກເກີນກຳນົດ ພັດສະດຸຈະຖືກຕີກັບຕົ້ນທາງ (ຂໍຂອບໃຈ)
+  ❗ຕ່າງແຂວງ (ໂອນ = ຝາກ) ❗ແຈ້ງບ່ອນຝາກ (ຝາກຕາມຄິວ ຖ້າຝາກບໍ່ທັນມື້ໂອນ ແມ່ນຝາກມື້ຖັດໄປ) 📮 
+  ❗ໂອນແຈ້ງບິນ = ຈ່າຍ-ຝາກ ✅
+  ❗ເປີດຈັນ-ວັນເສົາ 9:00-6:00
+  ❗ປິດທຸກວັນທິດ. (ຂອບໃຈລູກຄ້າທີ່ໃຊ້ບໍລິການ)
+
+  Bill No. : ${billData.bill_no}
+  ${billData.name}  ${billData.phone}
+${parcelList ? `${parcelList}` : ''}
+  
+  ຍອດລວມ ${useConvertCurrency(billData.amount_lak, 0)} Kip
+
+  ຊ່ອງທາງການຊຳລະ ແລະ ຂໍ້ມູນເພີ່ມເຕີມສຳຫຼັບການຄິດໄລ່ສິນຄ້າ: https://www.facebook.com/share/19sMdJzLsj/?mibextid=wwXIfr`;
+
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.open(`sms:${formattedPhone}?body=${encodeURIComponent(message)}`);
+    } else {
+      const whatsappMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${formattedPhone.replace(/[^0-9]/g, '')}&text=${whatsappMessage}`;
+      window.open(whatsappUrl, '_blank');
+    }
+
+    try {
+      request({
+        url: `/bill/notification`,
+        method: 'POST',
+        data: { bill_no: [billData.bill_no] },
+      });
+      billData.statusWhatApp = true;
+      toast.success(`Message prepared for ${phone}`);
+      refetch();
+    } catch (error) {
+      console.error('Error updating WhatsApp status:', error);
+      toast.error('Failed to update WhatsApp status');
+    }
+  };
+
   const columns = useMemo(() => {
     return [
       {
@@ -94,7 +159,7 @@ const Bill = () => {
         headerClassName: 'text-medium text-muted-re',
         Cell: ({ cell }) => {
           return (
-            <div className="text-medium" style={{ width: '2.5rem' }}>
+            <div className="text-medium" style={{ width: '3rem' }}>
               <Form.Check
                 hidden={cell.row.original.status !== 'ready'}
                 className="position-absolute px-4"
@@ -246,28 +311,22 @@ const Bill = () => {
                 <img src="/img/icons/truck.png" alt="trunk" />
               </a>
             </div>
-            {/* <div
-              className="cursor-pointer"
-              style={
-                cell.row.original?.payment_no !== null ||
-                role?.can_delete === 1 ||
-                (cell.row.original.status === 'success' && cell.row.original.status === 'shipped')
-                  ? { opacity: '0.5', cursor: 'auto' }
-                  : { cursor: 'pointer' }
-              }
-              onClick={() => {
-                if (
-                  cell.row.original?.payment_no === null ||
-                  role?.can_delete === 1 ||
-                  (cell.row.original.status === 'success' && cell.row.original.status === 'shipped')
-                ) {
-                  setIsDeleting(true);
-                  setGetId(row.values.id);
+            <div>
+              <a
+                className=" text-truncate h-100 d-flex align-items-center"
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  handleSendMessage(cell.row.original.phone, cell.row.original)
                 }
-              }}
-            >
-              <img src="/img/icons/delete.png" alt="delete" />
-            </div> */}
+                }
+              >
+                {cell.row.original.bill_status_notifications?.length > 0 ?
+                  <CsLineIcons icon="send" className="text-muted" />
+                  :
+                  <CsLineIcons icon="send" className="text-success" />
+                }
+              </a>
+            </div>
           </div>
         ),
       },
@@ -347,6 +406,7 @@ const Bill = () => {
       setFilter((currentFilter) => {
         const newFilter = { ...currentFilter, page: globalFilter !== undefined && 0 };
         if (globalFilter !== '') {
+          newFilter.page = 1;
           newFilter.searchText = globalFilter;
         } else {
           delete newFilter.searchText;
@@ -376,7 +436,7 @@ const Bill = () => {
     const selectToShipp = filterItemTpShipping.map((item) => item.bill_no);
     const allPhonesSame = filterItemTpShipping.every((item, index, array) => item.phone === array[0].phone);
 
-    if (selectToShipp.length > 0) {
+    if (selectToShipp?.length > 0) {
       try {
         const response = await request({
           url: `/shipping-payment`,
@@ -434,7 +494,7 @@ const Bill = () => {
         hideControlsStatusVerify
         hideControlsStatus
         isCheckAll
-        isShipping={selectToShipping.length > 0}
+        isShipping={selectToShipping?.length > 0}
         onClickShipped={setShow}
         statusOptions={options}
       />

@@ -75,7 +75,35 @@ const ParcelList = ({ data, setData, setCheckAll, isEditMode, setTotalAmount, se
         sortable: false,
         headerClassName: 'text-color-red text-end',
         Cell: ({ cell }) => {
-          const roundedValue = Math.ceil((rate ? cell.row.original.weight * rate : cell.row.original.price_bill) / 1000) * 1000;
+          let calculatedPrice = 0;
+          const { weight, customer_level: customerLevel } = cell.row.original;
+
+          if (rate) {
+            // ถ้ามี rate จากภายนอก ให้ใช้ rate นั้น
+            calculatedPrice = weight * rate;
+          } else if (customerLevel && customerLevel.rate_weights && customerLevel.rate_weights.length > 0) {
+            // ถ้ามี customer_level และ rate_weights
+            const rateWeights = customerLevel.rate_weights.sort((a, b) => a.weight - b.weight);
+            let selectedRate = customerLevel.rate; // default rate ถ้าหาไม่เจอ
+
+            // หา rate ตามน้ำหนัก
+            const foundRate = rateWeights.find((rateWeight) => weight <= rateWeight.weight);
+            if (foundRate) {
+              selectedRate = foundRate.rate;
+            }
+
+            // ถ้าน้ำหนักมากกว่าค่าสูงสุดใน rate_weights ให้ใช้ rate หลัก
+            if (weight > rateWeights[rateWeights.length - 1].weight) {
+              selectedRate = customerLevel.rate;
+            }
+
+            calculatedPrice = weight * selectedRate;
+          } else {
+            // ถ้าไม่มี customer_level หรือ rate_weights ให้ใช้ price_bill
+            calculatedPrice = cell.row.original.price_bill;
+          }
+
+          const roundedValue = Math.ceil(calculatedPrice / 1000) * 1000;
           cell.value = roundedValue;
           return <div className="text-end">{useConvertCurrency(roundedValue, 0)}</div>;
         },
@@ -150,15 +178,44 @@ const ParcelList = ({ data, setData, setCheckAll, isEditMode, setTotalAmount, se
   };
   // const sumAmount = result.reduce((acc, item) => acc + Math.ceil(item.price / 1000) * 1000, 0);
 
+  // Helper function to calculate price based on weight and customer level
+  const calculatePrice = (item) => {
+    const { weight, customer_level: customerLevel } = item;
+
+    if (rate) {
+      return weight * rate;
+    }
+
+    if (customerLevel && customerLevel.rate_weights && customerLevel.rate_weights.length > 0) {
+      const rateWeights = customerLevel.rate_weights.sort((a, b) => a.weight - b.weight);
+      let selectedRate = customerLevel.rate;
+
+      // หา rate ตามน้ำหนัก
+      const foundRate = rateWeights.find((rateWeight) => weight <= rateWeight.weight);
+      if (foundRate) {
+        selectedRate = foundRate.rate;
+      }
+
+      // ถ้าน้ำหนักมากกว่าค่าสูงสุดใน rate_weights ให้ใช้ rate หลัก
+      if (weight > rateWeights[rateWeights.length - 1].weight) {
+        selectedRate = customerLevel.rate;
+      }
+
+      return weight * selectedRate;
+    }
+
+    return item.price_bill;
+  };
+
   useEffect(() => {
     const sumAmountCurrency = result.reduce(
-      (acc, item) => (item.checked ? acc + Math.ceil((rate ? item.weight * rate : item.price_bill) / 1000) * 1000 : acc),
+      (acc, item) => (item.checked ? acc + Math.ceil(calculatePrice(item) / 1000) * 1000 : acc),
       0
     );
     setTotalAmount(Math.ceil(sumAmountCurrency * 100) / 100);
-  }, [isChange, result, setTotalAmount]);
+  }, [isChange, result, setTotalAmount, rate]);
 
-  const sumAmount = result.reduce((acc, item) => (item.checked ? acc + Math.ceil((rate ? item.weight * rate : item.price_bill) / 1000) * 1000 : acc), 0);
+  const sumAmount = result.reduce((acc, item) => (item.checked ? acc + Math.ceil(calculatePrice(item) / 1000) * 1000 : acc), 0);
 
   return (
     <Row>

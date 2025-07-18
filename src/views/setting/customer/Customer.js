@@ -96,7 +96,7 @@ const Customer = () => {
         headerClassName: 'text-medium text-muted-re',
         Cell: ({ cell }) => (
           <div className="text-medium" style={{ width: '6.6rem' }}>
-            {cell.row.original?.level_name || '-'}
+            {cell.row.original?.customer_level?.name || '-'}
           </div>
         ),
       },

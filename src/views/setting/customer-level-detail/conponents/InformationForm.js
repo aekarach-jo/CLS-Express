@@ -285,7 +285,22 @@ const InformationForm = ({ id, isLoading, setIsLoading, mode }) => {
               </Col>
             </Row>
             <Row className="mb-2">
-              <Form.Label className="col-form-label required">{f({ id: 'customerLevel.field.rateKip' })}</Form.Label>
+              <Col sm="12" md="12" lg="6">
+                <Form.Label className="col-form-label required">{f({ id: 'customerLevel.field.rateKip' })}</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="rate"
+                  onChange={handleChange}
+                  placeholder="0.00000"
+                  value={values?.rate}
+                  isInvalid={errors.rate && touched.rate}
+                  readOnly={!isEditMode}
+                />
+                {errors.rate && touched.rate && <div className="d-block invalid-feedback">{f({ id: errors.rate })}</div>}
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Form.Label className="col-form-label required">Rate - Range</Form.Label>
               {values?.rate_weights?.map((item, index) => (
                 <Col sm="12" md="4" lg="2" key={index}>
                   <Form.Label className="col-form-label required text-center w-100 pe-3">Weight | Rate</Form.Label>
