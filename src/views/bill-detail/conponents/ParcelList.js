@@ -97,7 +97,7 @@ const ParcelList = ({ data, setData, setCheckAll, isEditMode, setTotalAmount, se
               selectedRate = customerLevel.rate;
             }
 
-            calculatedPrice = weight * selectedRate;
+            calculatedPrice = selectedRate;
           } else {
             // ถ้าไม่มี customer_level หรือ rate_weights ให้ใช้ price_bill
             calculatedPrice = cell.row.original.price_bill;
@@ -201,7 +201,7 @@ const ParcelList = ({ data, setData, setCheckAll, isEditMode, setTotalAmount, se
         selectedRate = customerLevel.rate;
       }
 
-      return weight * selectedRate;
+      return selectedRate;
     }
 
     return item.price_bill;
