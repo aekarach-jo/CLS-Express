@@ -24,7 +24,33 @@ const initialData = {
   name: '',
   rate: '',
   active: false,
-  rate_weights: [],
+  rate_weights: [
+
+    {
+      rate: 0,
+      weight: 0,
+    },
+    {
+      rate: 0,
+      weight: 0,
+    },
+    {
+      rate: 0,
+      weight: 0,
+    },
+    {
+      rate: 0,
+      weight: 0,
+    },
+    {
+      rate: 0,
+      weight: 0,
+    },
+    {
+      rate: 0,
+      weight: 0,
+    },
+  ],
 };
 
 const validationSchema = Yup.object().shape({
@@ -113,7 +139,7 @@ const InformationForm = ({ id, isLoading, setIsLoading, mode }) => {
         toast.error(() => {
           return (
             <div style={{ width: 'auto' }}>
-              {error.response.data.errors.map((item, index) => (
+              {error?.response?.data?.errors?.map((item, index) => (
                 <div className="mb-2" key={index}>
                   {item}
                   <hr />
@@ -171,6 +197,8 @@ const InformationForm = ({ id, isLoading, setIsLoading, mode }) => {
       active: values?.active || false,
       rate_weights: processedRateWeights,
     };
+
+    console.log(data);
 
     if (Object.keys(errors).length === 0) {
       handleSubmit();
