@@ -188,7 +188,7 @@ const Topup = () => {
         setData(newArr);
         setTotal(result.total);
       },
-      onSettled(s) {},
+      onSettled(s) { },
       onError(err) {
         console.log(err);
 
@@ -397,9 +397,9 @@ const Topup = () => {
         <Col xs="2" md="1" lg="1" className="text-start">
           <strong>{total?.cost_price || ''}</strong>
         </Col>
-        <Col xs="2" md="1" lg="1" className="text-start">
+        {/* <Col xs="2" md="1" lg="1" className="text-start">
           <strong>{total?.balance || ''}</strong>
-        </Col>
+        </Col> */}
       </Row>
       {/* </Card> */}
 

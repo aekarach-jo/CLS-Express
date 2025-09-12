@@ -86,14 +86,22 @@ const ParcelList = ({ data, setData, setCheckAll, isEditMode, setTotalAmount, se
             const rateWeights = customerLevel.rate_weights.sort((a, b) => a.weight - b.weight);
             let selectedRate = customerLevel.rate; // default rate ถ้าหาไม่เจอ
 
-            // หา rate ตามน้ำหนัก
-            const foundRate = rateWeights.find((rateWeight) => weight <= rateWeight.weight);
+            // console.log('weight ', weight);
+            // console.log('rateWeights ', rateWeights);
+            // console.log('selectedRate ', selectedRate);
+
+            // ปัดน้ำหนักแบบปกติ (0.64 -> 0.6, >0.65 -> 0.7)
+            const roundedWeight = Math.round(weight * 10) / 10;
+
+            // หา rate ตามน้ำหนักที่ปัดแล้ว
+            const foundRate = rateWeights.find((rateWeight) => roundedWeight <= rateWeight.weight);
+            // console.log("foundRate ", foundRate);
             if (foundRate) {
               selectedRate = foundRate.rate;
             }
 
             // ถ้าน้ำหนักมากกว่าค่าสูงสุดใน rate_weights ให้ใช้ rate หลัก
-            if (weight > rateWeights[rateWeights.length - 1].weight) {
+            if (roundedWeight > rateWeights[rateWeights.length - 1].weight) {
               selectedRate = customerLevel.rate;
             }
 
@@ -104,6 +112,8 @@ const ParcelList = ({ data, setData, setCheckAll, isEditMode, setTotalAmount, se
           }
 
           const roundedValue = Math.ceil(calculatedPrice / 1000) * 1000;
+          // console.log('calculatedPrice:', calculatedPrice);
+          // console.log('Rounded Value:', roundedValue);
           cell.value = roundedValue;
           return <div className="text-end">{useConvertCurrency(roundedValue, 0)}</div>;
         },

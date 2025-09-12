@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+/* eslint-disable react/destructuring-assignment */
 /* eslint-disable camelcase */
 import HtmlHead from 'components/html-head/HtmlHead';
 import PageTitle from 'components/page-title/PageTitle';
@@ -31,6 +33,7 @@ const Accounting = () => {
   const { useConvertCurrency } = useConvert();
   const [filter, setFilter] = useState([]);
   const [data, setData] = useState([]);
+  const [resp, setResponse] = useState();
   const [total, setTotal] = useState();
   const [pageCount, setPageCount] = useState(1);
   const [pageC, setPageC] = useState(1);
@@ -95,35 +98,63 @@ const Accounting = () => {
         ),
       },
       {
-        Header: f({ id: 'report.account.field.cash' }),
+        Header: () => {
+          return (
+            <div className='text-center'>
+              <h3>{resp?.total?.total_cash || ''}</h3>
+              <div>{f({ id: 'report.account.field.cash' })}</div>
+            </div>
+          );
+        },
         accessor: 'cash',
         sortable: false,
         headerClassName: 'text-medium text-end',
-        Cell: ({ cell }) => <div className="text-medium text-end">{useConvertCurrency(cell.value, 2) || '-'}</div>,
+        Cell: ({ cell }) => <div className="text-medium text-end">{cell.value || '-'}</div>,
       },
       {
-        Header: f({ id: 'report.account.field.transfer' }),
+        Header: () => {
+          return (
+            <div className='text-center'>
+              <h3>{resp?.total?.total_transffer || ''}</h3>
+              <div>{f({ id: 'report.account.field.transfer' })}</div>
+            </div>
+          );
+        },
         accessor: 'transffer',
         sortable: false,
         headerClassName: 'text-medium text-end',
-        Cell: ({ cell }) => <div className="text-medium text-end">{useConvertCurrency(cell.value, 2) || '-'}</div>,
+        Cell: ({ cell }) => <div className="text-medium text-end">{cell.value || '-'}</div>,
       },
       {
-        Header: f({ id: 'report.account.field.aliPay' }),
+        Header: () => {
+          return (
+            <div className='text-center'>
+              <h3>{resp?.total?.total_alipay || ''}</h3>
+              <div>{f({ id: 'report.account.field.aliPay' })}</div>
+            </div>
+          );
+        },
         accessor: 'alipay',
         sortable: false,
         headerClassName: 'text-medium text-end',
-        Cell: ({ cell }) => <div className="text-medium text-end">{useConvertCurrency(cell.value, 2) || '-'}</div>,
+        Cell: ({ cell }) => <div className="text-medium text-end">{cell.value || '-'}</div>,
       },
       {
-        Header: f({ id: 'report.account.field.weChatPay' }),
+        Header: () => {
+          return (
+            <div className='text-center'>
+              <h3>{resp?.total?.total_wechat_pay || ''}</h3>
+              <div>{f({ id: 'report.account.field.weChatPay' })}</div>
+            </div>
+          );
+        },
         accessor: 'wechat_pay',
         sortable: false,
         headerClassName: 'text-medium text-end',
-        Cell: ({ cell }) => <div className="text-medium text-end">{useConvertCurrency(cell.value, 2) || '-'}</div>,
+        Cell: ({ cell }) => <div className="text-medium text-end">{cell.value || '-'}</div>,
       },
     ];
-  }, [f]);
+  }, [f, resp]);
 
   const tableInstance = useTable(
     {
@@ -168,12 +199,13 @@ const Accounting = () => {
     () => searchReportAccount({ filter, per_page: pageSize, page, sortBy: sortByFromTable(sortBy) }), // ใช้ฟังก์ชันนี้แทนการเรียกโดยตรง
     {
       refetchOnWindowFocus: false,
-      onSuccess(resp) {
-        const { data: result } = resp;
+      onSuccess(res) {
+        const { data: result } = res;
         const newArr = result?.data?.map((item) => ({ ...item, num: result.from }));
         setPageC(result.last_page);
         setPageCount(result.last_page);
         setTotal(result.total);
+        setResponse(res);
         setData(newArr);
       },
       onSettled(s) {

@@ -104,11 +104,11 @@ const Table = ({ tableInstance, className = 'react-table boxed', rowProps, isChe
                       // style={rowStyle}
                       style={
                         cellIndex + 1 === row.cells.length &&
-                        route.location.pathname !== '/parcel' &&
-                        route.location.pathname !== '/report/accounting' &&
-                        route.location.pathname !== '/report/incomeExpenses' &&
-                        route.location.pathname !== '/report/returnParcel'
-                          ? { position: 'absolute', right: '22px' }
+                          route.location.pathname !== '/parcel' &&
+                          route.location.pathname !== '/report/accounting' &&
+                          route.location.pathname !== '/report/incomeExpenses' &&
+                          route.location.pathname !== '/report/returnParcel'
+                          ? { position: 'absolute', right: '0px' }
                           : {}
                       }
                       className="sh-md-4"

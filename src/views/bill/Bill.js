@@ -124,7 +124,7 @@ ${parcelList ? `${parcelList}` : ''}
   
   ຍອດລວມ ${useConvertCurrency(billData.amount_lak, 0)} Kip
 
-  ຊ່ອງທາງການຊຳລະ ແລະ ຂໍ້ມູນເພີ່ມເຕີມສຳຫຼັບການຄິດໄລ່ສິນຄ້າ: https://www.facebook.com/share/19sMdJzLsj/?mibextid=wwXIfr`;
+  ຊ່ອງທາງການຊຳລະ ແລະ ຂໍ້ມູນເພີ່ມເຕີມສຳຫຼັບການຄິດໄລ່ສິນຄ້າ: https://www.facebook.com/share/1Avdz3u7oH/?mibextid=wwXIfr`;
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (isMobile) {
@@ -139,11 +139,15 @@ ${parcelList ? `${parcelList}` : ''}
       request({
         url: `/bill/notification`,
         method: 'POST',
-        data: { bill_no: [billData.bill_no] },
+        data: {
+          bill_no: [billData.bill_no],
+          cancel: billData.bill_status_notifications?.length > 0,
+        },
+      }).then(() => {
+        refetch();
       });
       billData.statusWhatApp = true;
       toast.success(`Message prepared for ${phone}`);
-      refetch();
     } catch (error) {
       console.error('Error updating WhatsApp status:', error);
       toast.error('Failed to update WhatsApp status');
@@ -247,6 +251,11 @@ ${parcelList ? `${parcelList}` : ''}
                   Waiting Payment
                 </div>
               )}
+              {row.original.status === "sending" && (
+                <div className="rounded-sm w-50 m-auto" style={{ background: '#4f66bd', color: 'white' }}>
+                  Sending
+                </div>
+              )}
             </div>
           );
         },
@@ -320,8 +329,8 @@ ${parcelList ? `${parcelList}` : ''}
                 }
                 }
               >
-                {cell.row.original.bill_status_notifications?.length > 0 ?
-                  <CsLineIcons icon="send" className="text-muted" />
+                {(cell.row.original.bill_status_notifications?.length > 0 && cell.row.original.status === 'sending') ?
+                  <CsLineIcons icon="refresh-horizontal" className="text-warning" />
                   :
                   <CsLineIcons icon="send" className="text-success" />
                 }
