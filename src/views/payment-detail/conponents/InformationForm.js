@@ -407,45 +407,54 @@ const InformationForm = ({ id, mode }) => {
     scanRef.current = true;
     setIsCheckHasChange(!isCheckHasChange);
     setBillList((prev) => {
-      return prev.map((item) => {
-        const parcelFound = item.parcels.some((parcel) => parcel.track_no === e.target.value);
-        if (parcelFound) {
-          toast(
-            <div>
-              Check <strong style={{ color: 'black' }}>[{e.target.value}]</strong> success
-            </div>,
-            {
-              position: isMobile && toast.POSITION.BOTTOM_RIGHT,
-              style: { marginBottom: isMobile ? '3rem' : '0rem' },
-            }
-          );
-          item.parcels = item.parcels.map((parcel) => {
-            if (parcel.track_no === e.target.value) {
-              return {
-                ...parcel,
-                checked: true,
-              };
-            }
-            return parcel;
-          });
-        } else {
-          toast.error(`Track Number [${e.target.value}] not found!`, {
+      // Check if track number exists in any parcel first
+      const trackExists = prev.some((item) =>
+        item.parcels.some((parcel) => parcel.track_no === e.target.value)
+      );
+
+      // Show toast only once based on whether track number was found
+      if (trackExists) {
+        toast(
+          <div>
+            Check <strong style={{ color: 'black' }}>[{e.target.value}]</strong> success
+          </div>,
+          {
             position: isMobile && toast.POSITION.BOTTOM_RIGHT,
             style: { marginBottom: isMobile ? '3rem' : '0rem' },
-          });
-        }
-        setTimeout(() => {
-          setTrackNo('');
-          scanRef.current = false;
-          return false;
-        }, 1000);
-        clearTimeout();
+          }
+        );
+      } else {
+        toast.error(`Track Number [${e.target.value}] not found!`, {
+          position: isMobile && toast.POSITION.BOTTOM_RIGHT,
+          style: { marginBottom: isMobile ? '3rem' : '0rem' },
+        });
+      }
+
+      // Update the bill list
+      const updatedList = prev.map((item) => {
+        const updatedParcels = item.parcels.map((parcel) => {
+          if (parcel.track_no === e.target.value) {
+            return {
+              ...parcel,
+              checked: true,
+            };
+          }
+          return parcel;
+        });
 
         return {
           ...item,
-          checkedAll: item.parcels.every((parcel) => parcel.checked),
+          parcels: updatedParcels,
+          checkedAll: updatedParcels.every((parcel) => parcel.checked),
         };
       });
+
+      setTimeout(() => {
+        setTrackNo('');
+        scanRef.current = false;
+      }, 1000);
+
+      return updatedList;
     });
     // setCheckAll((prev) => {
     //   return prev.map((item) => {
