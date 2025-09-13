@@ -31,6 +31,7 @@ const initialData = {
   name: '',
   phone: '',
   address: '',
+  remark: '',
   cash: 0,
   transfer: 0,
   amount: 0,
@@ -99,6 +100,7 @@ const InformationForm = ({ id, mode }) => {
         data.name = data?.data.bill_payment[0]?.name;
         data.phone = data?.data.bill_payment[0]?.phone;
         data.address = data?.data.bill_payment[0]?.address;
+        data.remark = data?.data.bill_payment[0]?.remark;
         data.searchPhone = data?.data.bill_payment[0]?.phone;
         const filteredPayments = data?.data?.payments?.filter((item) => item.method !== null);
         data.data.payments = filteredPayments;
@@ -648,6 +650,19 @@ const InformationForm = ({ id, mode }) => {
                         setTrackNo(e.target.value);
                       }}
                       value={trackNo || ''}
+                    />
+                  </InputGroup>
+                </Col>
+                <Col xs="12" md="6" className="text-center my-2">
+                  <InputGroup>
+                    <Form.Control disabled value="Remark" className="font-weight-bold" />
+                    <Form.Control
+                      className="w-50"
+                      type="text"
+                      name="remark"
+                      onChange={handleChange}
+                      value={values?.remark || ''}
+                      readOnly={values?.data?.payments[0]?.status === 'paid'}
                     />
                   </InputGroup>
                 </Col>

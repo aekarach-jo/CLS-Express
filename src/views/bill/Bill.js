@@ -127,12 +127,14 @@ ${parcelList ? `${parcelList}` : ''}
   ຊ່ອງທາງການຊຳລະ ແລະ ຂໍ້ມູນເພີ່ມເຕີມສຳຫຼັບການຄິດໄລ່ສິນຄ້າ: https://www.facebook.com/share/1Avdz3u7oH/?mibextid=wwXIfr`;
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile) {
-      window.open(`sms:${formattedPhone}?body=${encodeURIComponent(message)}`);
-    } else {
-      const whatsappMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://api.whatsapp.com/send?phone=${formattedPhone.replace(/[^0-9]/g, '')}&text=${whatsappMessage}`;
-      window.open(whatsappUrl, '_blank');
+    if (billData.bill_status_notifications?.length === 0) {
+      if (isMobile) {
+        window.open(`sms:${formattedPhone}?body=${encodeURIComponent(message)}`);
+      } else {
+        const whatsappMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${formattedPhone.replace(/[^0-9]/g, '')}&text=${whatsappMessage}`;
+        window.open(whatsappUrl, '_blank');
+      }
     }
 
     try {
@@ -310,9 +312,9 @@ ${parcelList ? `${parcelList}` : ''}
             <div>
               <a
                 className=" text-truncate h-100 d-flex align-items-center"
-                style={cell.row.original.status !== 'ready' ? { opacity: '0.5' } : { cursor: 'pointer' }}
+                style={(cell.row.original.status !== 'ready' && cell.row.original.status !== 'sending') ? { opacity: '0.5' } : { cursor: 'pointer' }}
                 onClick={async () => {
-                  if (cell.row.original.status === 'ready') {
+                  if (cell.row.original.status === 'ready' || cell.row.original.status === 'sending') {
                     handleShipped(row.values.bill_no, cell.row.original);
                   }
                 }}
