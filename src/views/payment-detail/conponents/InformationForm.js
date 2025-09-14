@@ -663,7 +663,6 @@ const InformationForm = ({ id, mode }) => {
                       name="remark"
                       onChange={handleChange}
                       value={values?.remark || ''}
-                      readOnly={values?.data?.payments[0]?.status === 'paid'}
                     />
                   </InputGroup>
                 </Col>
@@ -785,8 +784,7 @@ const InformationForm = ({ id, mode }) => {
                     <Button
                       className="btn-icon text-white"
                       variant="warning"
-                      hidden={mode === 'view' || isPaid}
-                      onClick={() => handleSave({ status: 'pending' })}
+                      onClick={() => handleSave({ status: isPaid ? 'paid' : 'pending' })}
                       disabled={billList.length === 0 || isAdding || isSaving}
                     >
                       {f({ id: 'common.save' })}

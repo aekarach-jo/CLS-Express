@@ -167,7 +167,7 @@ ${parcelList ? `${parcelList}` : ''}
           return (
             <div className="text-medium" style={{ width: '3rem' }}>
               <Form.Check
-                hidden={cell.row.original.status !== 'ready'}
+                hidden={cell.row.original.status !== 'ready' && cell.row.original.status !== 'sending'}
                 className="position-absolute px-4"
                 style={{ left: 0 }}
                 checked={cell.row.original.checked}
@@ -443,7 +443,7 @@ ${parcelList ? `${parcelList}` : ''}
   };
 
   const onClickShipped = async () => {
-    const filterItemTpShipping = selectToShipping.filter((item) => item.status === 'ready');
+    const filterItemTpShipping = selectToShipping.filter((item) => (item.status === 'ready' || item.status === 'sending'));
     const selectToShipp = filterItemTpShipping.map((item) => item.bill_no);
     const allPhonesSame = filterItemTpShipping.every((item, index, array) => item.phone === array[0].phone);
 

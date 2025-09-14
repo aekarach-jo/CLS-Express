@@ -101,7 +101,7 @@ const Accounting = () => {
         Header: () => {
           return (
             <div className='text-center'>
-              <h3>{resp?.total?.total_cash || ''}</h3>
+              <h3>{resp?.total?.total_cash ? parseFloat(resp.total.total_cash.toString().replace(/,/g, '')).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ''}</h3>
               <div>{f({ id: 'report.account.field.cash' })}</div>
             </div>
           );
@@ -115,7 +115,7 @@ const Accounting = () => {
         Header: () => {
           return (
             <div className='text-center'>
-              <h3>{resp?.total?.total_transffer || ''}</h3>
+              <h3>{resp?.total?.total_transffer ? parseFloat(resp.total.total_transffer.toString().replace(/,/g, '')).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ''}</h3>
               <div>{f({ id: 'report.account.field.transfer' })}</div>
             </div>
           );
@@ -143,7 +143,7 @@ const Accounting = () => {
         Header: () => {
           return (
             <div className='text-center'>
-              <h3>{resp?.total?.total_wechat_pay || ''}</h3>
+              <h3>{resp?.total?.total_wechat_pay ? parseFloat(resp.total.total_wechat_pay.toString().replace(/,/g, '')).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ''}</h3>
               <div>{f({ id: 'report.account.field.weChatPay' })}</div>
             </div>
           );
