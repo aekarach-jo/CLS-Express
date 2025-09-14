@@ -216,6 +216,7 @@ const InformationForm = ({ id, mode }) => {
     var data = {
       id: values?.id,
       active: true,
+      remark: values?.remark,
       bill: getFilterChecked.map((item) => item.bill_no),
       draft: status === 'pending' ? true : false,
       payment_type: [],

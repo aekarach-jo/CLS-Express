@@ -5,8 +5,8 @@ export const IS_AUTH_GUARD_ACTIVE = true;
 export const USE_MULTI_LANGUAGE = true;
 
 // export const SERVICE_URL = 'https://0e0e-202-137-130-174.ngrok-free.app/backend-ZTO/api';
-export const SERVICE_URL = 'https://uat-backend.cls-express.com/api';
-// export const SERVICE_URL = 'https://backend.cls-express.com/api';
+// export const SERVICE_URL = 'https://uat-backend.cls-express.com/api';
+export const SERVICE_URL = 'https://backend.cls-express.com/api';
 
 // For detailed information: https://github.com/nfl/react-helmet#reference-guide
 export const REACT_HELMET_PROPS = {
